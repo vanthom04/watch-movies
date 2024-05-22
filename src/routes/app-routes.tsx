@@ -1,11 +1,14 @@
+import { lazy, Suspense } from 'react'
 import { Outlet, Route, Routes } from 'react-router-dom'
+
 import config from '~/config'
 import Layout from '~/layouts'
-import HomePage from '~/pages/home'
-import ListMoviePage from '~/pages/list-movie'
-import MyFavoritesPage from '~/pages/my-favorites'
-import SearchPage from '~/pages/search'
-import WatchingPage from '~/pages/watching'
+
+const HomePage = lazy(() => import('~/pages/home'))
+const SearchPage = lazy(() => import('~/pages/search'))
+const ListMoviePage = lazy(() => import('~/pages/list-movie'))
+const WatchingPage = lazy(() => import('~/pages/watching'))
+const MyFavoritesPage = lazy(() => import('~/pages/my-favorites'))
 
 const AppRoutes: React.FC = () => {
   return (
@@ -13,7 +16,9 @@ const AppRoutes: React.FC = () => {
       <Route
         element={
           <Layout>
-            <Outlet />
+            <Suspense>
+              <Outlet />
+            </Suspense>
           </Layout>
         }
       >

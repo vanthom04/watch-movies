@@ -31,6 +31,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, className }) => {
   const [durationTime, setDurationTime] = useState<number>(0)
   const [progressValue, setProgressValue] = useState<number>(0)
   const [isShowControls, setIsShowControls] = useState<boolean>(videoUrl ? true : false)
+  const [isErrorVideo, setIsErrorVideo] = useState<boolean>(false)
 
   const handleFullScreen = useFullScreenHandle()
 
@@ -111,7 +112,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, className }) => {
 
       timerMouseVideoRef.current = setTimeout(() => {
         setIsShowControls(false)
-      }, 4000)
+      }, 3500)
     }
   }
 
@@ -123,7 +124,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, className }) => {
 
       timerMouseVideoRef.current = setTimeout(() => {
         setIsShowControls(false)
-      }, 4000)
+      }, 3500)
     }
   }
 
@@ -152,8 +153,16 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, className }) => {
             url={videoUrl}
             onProgress={handleProgress}
             onDuration={(duration) => setDurationTime(duration)}
-            onError={() => {}}
+            onError={() => setIsErrorVideo(true)}
           />
+          <div
+            className={cn(
+              'absolute top-0 left-0 right-0 bottom-0 bg-neutral-900/50 hidden items-center justify-center',
+              { '!flex': isErrorVideo }
+            )}
+          >
+            <h1 className="text-white text-2xl">Hiện không tìm thấy video!</h1>
+          </div>
         </div>
         <div
           className={cn('w-ful h-full hidden', {
