@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import ReactHLSPlayer from 'react-hls-player'
 import { MaximizeIcon, MinimizeIcon } from 'lucide-react'
 import { FaPause, FaPlay } from 'react-icons/fa'
 import { IoMdSettings } from 'react-icons/io'
 import { FaVolumeHigh } from 'react-icons/fa6'
 import { FullScreen, useFullScreenHandle } from 'react-full-screen'
+import Hls from 'hls.js'
 
 import { cn } from '~/lib/utils'
 import { detectDeviceType, formatTime } from '~/utils'
@@ -39,29 +39,42 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, className }) => {
   const IconPlay = isPlaying ? FaPause : FaPlay
   const IconFullScreen = handleFullScreen.active ? MinimizeIcon : MaximizeIcon
 
-  const playerRef = useRef<HTMLVideoElement | null>(null)
+  const videoRef = useRef<HTMLVideoElement | null>(null)
   const progressRef = useRef<HTMLDivElement | null>(null)
   const timerMouseVideoRef = useRef<number | null>(null)
 
   useEffect(() => {
-    if (!playerRef.current) return
+    if (videoRef.current) {
+      if (Hls.isSupported()) {
+        const hls = new Hls()
+        hls.loadSource(videoUrl)
+        hls.attachMedia(videoRef.current)
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          //
+        })
+      }
+    }
+  }, [videoUrl])
+
+  useEffect(() => {
+    if (!videoRef.current) return
     if (isPlaying) {
-      playerRef.current?.play()
+      videoRef.current?.play()
     } else {
-      playerRef.current?.pause()
+      videoRef.current?.pause()
     }
   }, [isPlaying])
 
   useEffect(() => {
-    if (playerRef.current) {
+    if (videoRef.current) {
       setVolumeToLocalStorage(volume)
-      playerRef.current.volume = volume
+      videoRef.current.volume = volume
     }
   }, [volume])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!playerRef.current) return
+      if (!videoRef.current) return
       if (e.key === 'f') {
         e.preventDefault()
         handleFullScreen.active ? handleFullScreen.exit() : handleFullScreen.enter()
@@ -73,10 +86,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, className }) => {
         isPlaying ? setIsPlaying(false) : setIsPlaying(true)
       } else if (e.key === 'ArrowLeft') {
         e.preventDefault()
-        playerRef.current.currentTime -= 10
+        videoRef.current.currentTime -= 10
       } else if (e.key === 'ArrowRight') {
         e.preventDefault()
-        playerRef.current.currentTime += 10
+        videoRef.current.currentTime += 10
       } else if (e.key === 'ArrowUp') {
         e.preventDefault()
         setVolume((prevState) => {
@@ -100,14 +113,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, className }) => {
   }, [handleFullScreen, isPlaying])
 
   const handleClickProgress = (e: React.MouseEvent) => {
-    if (playerRef.current) {
+    if (videoRef.current) {
       const progress = progressRef.current
       const rect = progress?.getBoundingClientRect()
       if (rect) {
         const mouseX = e.clientX - rect?.left
         const newProgress = mouseX / rect?.width
         setProgressValue(newProgress * 100)
-        playerRef.current.currentTime = newProgress * durationTime
+        videoRef.current.currentTime = newProgress * durationTime
         setIsLoading(true)
       }
     }
@@ -122,16 +135,16 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, className }) => {
   }
 
   const handleTimeUpdateVideo = () => {
-    if (playerRef.current) {
-      const currentTime = playerRef.current.currentTime
+    if (videoRef.current) {
+      const currentTime = videoRef.current.currentTime
       setProgressValue((currentTime / durationTime) * 100)
       setCurrentTime(currentTime)
     }
   }
 
   const handleLoadedDataVideo = () => {
-    if (playerRef.current) {
-      setDurationTime(playerRef.current.duration)
+    if (videoRef.current) {
+      setDurationTime(videoRef.current.duration)
       setIsLoading(false)
     }
   }
@@ -178,8 +191,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, className }) => {
           onMouseMove={handleMouseMoveVideo}
           onMouseLeave={handleMouseLeaveVideo}
         >
-          <ReactHLSPlayer
-            playerRef={playerRef}
+          <video
+            ref={videoRef}
             width="100%"
             height="100%"
             src={videoUrl}
