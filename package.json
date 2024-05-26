@@ -12,7 +12,6 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "vercel-build": "npm install --legacy-peer-deps && npm run build",
     "lint": "eslint src --ext ts,tsx",
     "lint:fix": "eslint --fix src --ext ts,tsx",
     "prettier": "prettier --check \"src/**/(*.tsx|*.ts|*.css|*.scss)\"",
