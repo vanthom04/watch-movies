@@ -1,4 +1,4 @@
-import * as httpRequest from '~/utils/httpRequest'
+import { api } from '~/utils/api'
 import { ListMovieApi } from '~/types'
 
 const getListMovie = async (
@@ -6,10 +6,13 @@ const getListMovie = async (
   page: number = 1,
   limit: number = 20
 ): Promise<ListMovieApi> => {
-  const response = await httpRequest.get(`v1/api/danh-sach/${slug}`, {
-    params: { page, limit }
-  })
-  return response
+  try {
+    return await api.get<ListMovieApi>(`/v1/api/danh-sach/${slug}`, {
+      params: { page, limit }
+    })
+  } catch (error) {
+    return Promise.reject(error)
+  }
 }
 
 export default getListMovie

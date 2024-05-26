@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { FaPlay } from 'react-icons/fa'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 
-import { useRouter } from '~/hooks'
 import { cn } from '~/lib/utils'
+import { useRouter } from '~/hooks'
 import { detectDeviceType } from '~/utils'
 
 interface MovieItemProps {

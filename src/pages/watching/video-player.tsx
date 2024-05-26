@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import ReactPlayer from 'react-player'
-import { OnProgressProps } from 'react-player/base'
+import ReactHLSPlayer from 'react-hls-player'
 import { MaximizeIcon, MinimizeIcon } from 'lucide-react'
 import { FaPause, FaPlay } from 'react-icons/fa'
 import { IoMdSettings } from 'react-icons/io'
@@ -11,6 +10,7 @@ import { cn } from '~/lib/utils'
 import { detectDeviceType, formatTime } from '~/utils'
 import { Button } from '~/components/ui/button'
 import { Progress } from '~/components/ui/progress'
+import Spinner from '~/components/spinner'
 
 interface VideoPlayerProps {
   videoUrl: string
@@ -32,22 +32,36 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, className }) => {
   const [progressValue, setProgressValue] = useState<number>(0)
   const [isShowControls, setIsShowControls] = useState<boolean>(videoUrl ? true : false)
   const [isErrorVideo, setIsErrorVideo] = useState<boolean>(false)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
 
   const handleFullScreen = useFullScreenHandle()
 
   const IconPlay = isPlaying ? FaPause : FaPlay
   const IconFullScreen = handleFullScreen.active ? MinimizeIcon : MaximizeIcon
 
-  const progressRef = useRef<HTMLDivElement>(null)
-  const playerRef = useRef<ReactPlayer>(null)
+  const playerRef = useRef<HTMLVideoElement | null>(null)
+  const progressRef = useRef<HTMLDivElement | null>(null)
   const timerMouseVideoRef = useRef<number | null>(null)
 
   useEffect(() => {
-    setVolumeToLocalStorage(volume)
+    if (!playerRef.current) return
+    if (isPlaying) {
+      playerRef.current?.play()
+    } else {
+      playerRef.current?.pause()
+    }
+  }, [isPlaying])
+
+  useEffect(() => {
+    if (playerRef.current) {
+      setVolumeToLocalStorage(volume)
+      playerRef.current.volume = volume
+    }
   }, [volume])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (!playerRef.current) return
       if (e.key === 'f') {
         e.preventDefault()
         handleFullScreen.active ? handleFullScreen.exit() : handleFullScreen.enter()
@@ -59,10 +73,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, className }) => {
         isPlaying ? setIsPlaying(false) : setIsPlaying(true)
       } else if (e.key === 'ArrowLeft') {
         e.preventDefault()
-        playerRef.current?.seekTo(playerRef.current.getCurrentTime() - 10, 'seconds')
+        playerRef.current.currentTime -= 10
       } else if (e.key === 'ArrowRight') {
         e.preventDefault()
-        playerRef.current?.seekTo(playerRef.current.getCurrentTime() + 10, 'seconds')
+        playerRef.current.currentTime += 10
       } else if (e.key === 'ArrowUp') {
         e.preventDefault()
         setVolume((prevState) => {
@@ -85,20 +99,40 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, className }) => {
     }
   }, [handleFullScreen, isPlaying])
 
-  const handleProgress = (state: OnProgressProps) => {
-    const progressValue = (state.playedSeconds / durationTime) * 100
-    setCurrentTime(state.playedSeconds)
-    setProgressValue(progressValue)
+  const handleClickProgress = (e: React.MouseEvent) => {
+    if (playerRef.current) {
+      const progress = progressRef.current
+      const rect = progress?.getBoundingClientRect()
+      if (rect) {
+        const mouseX = e.clientX - rect?.left
+        const newProgress = mouseX / rect?.width
+        setProgressValue(newProgress * 100)
+        playerRef.current.currentTime = newProgress * durationTime
+        setIsLoading(true)
+      }
+    }
   }
 
-  const handleClickProgress = (e: React.MouseEvent) => {
-    const progress = progressRef.current
-    const rect = progress?.getBoundingClientRect()
-    if (rect) {
-      const mouseX = e.clientX - rect?.left
-      const newProgress = mouseX / rect?.width
-      setProgressValue(newProgress * 100)
-      playerRef.current?.seekTo(newProgress * durationTime, 'seconds')
+  const handleCanPlayVideo = () => {
+    setIsLoading(false)
+  }
+
+  const handleLoadStartVideo = () => {
+    setIsLoading(true)
+  }
+
+  const handleTimeUpdateVideo = () => {
+    if (playerRef.current) {
+      const currentTime = playerRef.current.currentTime
+      setProgressValue((currentTime / durationTime) * 100)
+      setCurrentTime(currentTime)
+    }
+  }
+
+  const handleLoadedDataVideo = () => {
+    if (playerRef.current) {
+      setDurationTime(playerRef.current.duration)
+      setIsLoading(false)
     }
   }
 
@@ -144,17 +178,25 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, className }) => {
           onMouseMove={handleMouseMoveVideo}
           onMouseLeave={handleMouseLeaveVideo}
         >
-          <ReactPlayer
-            ref={playerRef}
+          <ReactHLSPlayer
+            playerRef={playerRef}
             width="100%"
             height="100%"
-            playing={isPlaying}
-            volume={volume}
-            url={videoUrl}
-            onProgress={handleProgress}
-            onDuration={(duration) => setDurationTime(duration)}
+            src={videoUrl}
+            onCanPlay={handleCanPlayVideo}
+            onLoadStart={handleLoadStartVideo}
+            onTimeUpdate={handleTimeUpdateVideo}
+            onLoadedData={handleLoadedDataVideo}
             onError={() => setIsErrorVideo(true)}
           />
+          <div
+            className={cn(
+              'absolute top-0 left-0 right-0 bottom-0 hidden items-center justify-center',
+              { '!flex': isLoading }
+            )}
+          >
+            <Spinner className="w-16 h-16" />
+          </div>
           <div
             className={cn(
               'absolute top-0 left-0 right-0 bottom-0 bg-neutral-900/50 hidden items-center justify-center',
@@ -166,7 +208,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, className }) => {
         </div>
         <div
           className={cn('w-ful h-full hidden', {
-            block: isShowControls
+            block: isShowControls && !isLoading
           })}
         >
           <Button
@@ -192,6 +234,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, className }) => {
               onClick={handleClickProgress}
               onMouseMove={() => {}}
             />
+
             <span className="text-white text-[13px]">{formatTime(durationTime)}</span>
           </div>
           <div

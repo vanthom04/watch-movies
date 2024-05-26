@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
 import { cn } from '~/lib/utils'
+import { scrollTop } from '~/utils'
 import { useQueryMovie } from '~/queries'
 import VideoPlayer from './video-player'
 import WatchingContent from './watching-content'
@@ -25,18 +26,17 @@ const WatchingPage = () => {
     if (url === videoUrl) return
     setVideoUrl(url)
     localStorage.setItem(window.location.pathname, url)
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    })
+    scrollTop()
   }
 
   return (
     <div className="w-full h-full animate-fade-in select-none">
-      <div className="flex flex-col lg:flex-row bg-[#111319]">
+      <div className="flex flex-col lg:flex-row bg-[#131212]">
         <VideoPlayer className="basis-2/3" videoUrl={videoUrl} />
         <div className="basis-1/3 flex flex-col gap-y-2 px-4 py-3">
-          <h2 className="text-white text-lg sm:text-xl md:text-2xl font-semibold">Chọn tập</h2>
+          <h2 className="text-white text-lg sm:text-xl md:text-2xl font-normal xl:font-medium">
+            Chọn tập
+          </h2>
           <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-4 gap-3.5 md:gap-6 max-h-96 overflow-y-auto">
             {data?.episodes[0].server_data.map((episode) => (
               <div

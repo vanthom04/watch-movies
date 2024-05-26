@@ -6,8 +6,8 @@ import Layout from '~/layouts'
 
 const HomePage = lazy(() => import('~/pages/home'))
 const SearchPage = lazy(() => import('~/pages/search'))
-const ListMoviePage = lazy(() => import('~/pages/list-movie'))
 const WatchingPage = lazy(() => import('~/pages/watching'))
+const ListMoviePage = lazy(() => import('~/pages/list-movie'))
 const MyFavoritesPage = lazy(() => import('~/pages/my-favorites'))
 
 const AppRoutes: React.FC = () => {

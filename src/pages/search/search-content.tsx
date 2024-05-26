@@ -5,7 +5,7 @@ interface SearchContentProps {
   data: SearchItem[] | undefined
 }
 
-const SearchContent = ({ data }: SearchContentProps) => {
+const SearchContent: React.FC<SearchContentProps> = ({ data }) => {
   if (!data || data.length === 0) {
     return (
       <div className="w-full flex items-center justify-center">

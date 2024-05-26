@@ -1,9 +1,12 @@
-import * as httpRequest from '~/utils/httpRequest'
+import { api } from '~/utils/api'
 import { MovieApi } from '~/types'
 
 const getMovie = async (slugMovie: string): Promise<MovieApi> => {
-  const response = await httpRequest.get(`phim/${slugMovie}`)
-  return response
+  try {
+    return await api.get<MovieApi>(`/phim/${slugMovie}`)
+  } catch (error) {
+    return Promise.reject(error)
+  }
 }
 
 export default getMovie

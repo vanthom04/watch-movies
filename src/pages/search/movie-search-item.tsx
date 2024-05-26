@@ -11,7 +11,7 @@ interface MovieSearchItemProps {
   data: SearchItem
 }
 
-const MovieSearchItem = ({ data }: MovieSearchItemProps) => {
+const MovieSearchItem: React.FC<MovieSearchItemProps> = ({ data }) => {
   const [imageUrl, setImageUrl] = useState<string>(BASE_IMAGE_URL + data?.thumb_url)
   const [isShow, setIsShow] = useState<boolean>(false)
   const router = useRouter()
