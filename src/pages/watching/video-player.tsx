@@ -50,7 +50,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, className }) => {
         hls.loadSource(videoUrl)
         hls.attachMedia(videoRef.current)
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          //
+          // handle play video
+          videoRef.current?.play()
+          setIsPlaying(true)
         })
       }
     }
@@ -92,14 +94,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, className }) => {
         videoRef.current.currentTime += 10
       } else if (e.key === 'ArrowUp') {
         e.preventDefault()
-        setVolume((prevState) => {
-          const newVolume = prevState + 0.1
+        setVolume((prevVolume) => {
+          const newVolume = prevVolume + 0.1
           if (newVolume >= 1) return 1
           return newVolume
         })
       } else if (e.key === 'ArrowDown') {
-        setVolume((prevState) => {
-          const newVolume = prevState - 0.1
+        setVolume((prevVolume) => {
+          const newVolume = prevVolume - 0.1
           if (newVolume <= 0) return 0
           return newVolume
         })
@@ -126,13 +128,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, className }) => {
     }
   }
 
-  const handleCanPlayVideo = () => {
-    setIsLoading(false)
-  }
+  const handleCanPlayVideo = () => setIsLoading(false)
 
-  const handleLoadStartVideo = () => {
-    setIsLoading(true)
-  }
+  const handleLoadStartVideo = () => setIsLoading(true)
 
   const handleTimeUpdateVideo = () => {
     if (videoRef.current) {
@@ -200,7 +198,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, className }) => {
             onLoadStart={handleLoadStartVideo}
             onTimeUpdate={handleTimeUpdateVideo}
             onLoadedData={handleLoadedDataVideo}
-            onError={() => setIsErrorVideo(true)}
+            onError={() => setIsErrorVideo(false)}
           />
           <div
             className={cn(
@@ -208,7 +206,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, className }) => {
               { '!flex': isLoading }
             )}
           >
-            <Spinner className="w-16 h-16" />
+            <Spinner className="w-10 h-10 md:w-12 md:h-12 lg:w-16 lg:h-16" />
           </div>
           <div
             className={cn(
@@ -221,17 +219,17 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, className }) => {
         </div>
         <div
           className={cn('w-ful h-full hidden', {
-            block: isShowControls && !isLoading
+            block: isShowControls && !isErrorVideo
           })}
         >
           <Button
             className={cn(
-              'w-12 md:w-16 lg:w-24 h-12 md:h-16 lg:h-24 flex items-center justify-center absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#2b333fb3] border-none rounded-full hover:bg-[#2b333fb3]',
-              { hidden: detectDeviceType() === 'Desktop' && isPlaying }
+              'w-12 md:w-14 lg:w-20 h-12 md:h-14 lg:h-20 flex items-center justify-center absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-neutral-700/40 border-none rounded-full hover:bg-neutral-700/50',
+              { hidden: detectDeviceType() === 'Desktop' && isPlaying && isLoading }
             )}
             onClick={() => setIsPlaying(!isPlaying)}
           >
-            <IconPlay color="#fff" className="w-5 md:w-6 lg:w-10 h-5 md:h-6 lg:h-10" />
+            <IconPlay color="#fff" className="w-5 md:w-6 lg:w-8 h-5 md:h-6 lg:h-8" />
           </Button>
           <div
             className="w-[95%] flex items-center justify-center absolute left-1/2 -translate-x-1/2 bottom-10"

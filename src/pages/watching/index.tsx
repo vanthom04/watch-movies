@@ -34,15 +34,15 @@ const WatchingPage = () => {
       <div className="flex flex-col lg:flex-row bg-[#131212]">
         <VideoPlayer className="basis-2/3" videoUrl={videoUrl} />
         <div className="basis-1/3 flex flex-col gap-y-2 px-4 py-3">
-          <h2 className="text-white text-lg sm:text-xl md:text-2xl font-normal xl:font-medium">
+          <h2 className="text-white text-lg sm:text-xl md:text-xl font-normal xl:font-medium">
             Chọn tập
           </h2>
-          <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-4 gap-3.5 md:gap-6 max-h-96 overflow-y-auto">
+          <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-4 gap-3.5 md:gap-4 max-h-96 overflow-y-auto p-1">
             {data?.episodes[0].server_data.map((episode) => (
               <div
                 key={episode.filename}
                 className={cn(
-                  'px-2.5 py-2 bg-[#1a1c22] text-white text-sm md:text-base text-center rounded-sm cursor-pointer',
+                  'px-2.5 py-2 bg-[#1a1c22] text-white text-sm md:text-[15px] text-center rounded-sm cursor-pointer',
                   { 'border border-white': videoUrl === episode.link_m3u8 }
                 )}
                 onClick={() => handleSetVideoUrl(episode.link_m3u8)}
