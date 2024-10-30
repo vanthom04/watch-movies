@@ -3,7 +3,12 @@ import { withAuth } from 'next-auth/middleware'
 export default withAuth({
   pages: {
     signIn: '/'
-  }
+  },
+  callbacks: {}
 })
 
-export const config = {}
+export const config = {
+  matcher: [
+    '/my-favorites'
+  ]
+}
